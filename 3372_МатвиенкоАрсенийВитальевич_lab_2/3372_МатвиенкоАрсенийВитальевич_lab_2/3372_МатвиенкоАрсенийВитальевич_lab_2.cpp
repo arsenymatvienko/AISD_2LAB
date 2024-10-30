@@ -32,7 +32,7 @@ private:
 
 public:
     Stack(int size) {
-        arr = new pair<int, int>[size]; // Выделение памяти под массив пар
+        arr = new pair<int, int>[size];
         capacity = size;
         top = -1;
     }
@@ -115,7 +115,7 @@ public:
         array[size++] = value;
     }
 
-    void show() //const
+    void show()
     {
         for (int i = 0; i < size; i++)
         {
@@ -148,15 +148,17 @@ int getMinRun(int n) // Чтобы при делении общего колич
     int r = 0;       // (из диапазона от 32 до 64)
     while (n >= 64)
     {
-        r |= n & 1; // 
-        n >>= 1; // Сдвиг вправо на один бит
+        r |= n & 1;
+        n >>= 1; 
     }
     return n + r;
 }
 
 // Чтобы найти индекс в R[] который больше чем L[i]
-int binarySearch(int* R, int start, int end, int key) {
-    while (start < end) {
+int binarySearch(int* R, int start, int end, int key) 
+{
+    while (start < end)
+    {
         int mid = start + (end - start) / 2;
         if (R[mid] <= key)
             start = mid + 1;
@@ -209,12 +211,14 @@ void merge(int* arr, int left, int mid, int right)
     }
 
     // Копирование оставшихся элементов L[], если есть
-    while (i < n1) {
+    while (i < n1)
+    {
         arr[k++] = L[i++];
     }
 
     // Копирование оставшихся элементов R[], если есть
-    while (j < n2) {
+    while (j < n2)
+    {
         arr[k++] = R[j++];
     }
 
@@ -222,7 +226,7 @@ void merge(int* arr, int left, int mid, int right)
     delete[] R;
 }
 
-void timSort(int* arr, int size)
+void timSort(int* arr, int size) // лучший - n, средний/худший - nLogn
 {
     int minRun = getMinRun(size);
 
@@ -232,21 +236,31 @@ void timSort(int* arr, int size)
         insertionSort(arr, start, min(start + minRun - 1, size - 1));
     }
 
-    // Соединяем отсортированные раны
+    // стек для хранения индексов подмассивов
+    Stack mergeStack(size / minRun);
+
     for (int runSize = minRun; runSize < size;)
     {
-        for (int leftStart = 0; leftStart < size; leftStart += runSize * 2) 
+        for (int leftStart = 0; leftStart < size; leftStart += runSize * 2)
         {
             int mid = min(leftStart + runSize - 1, size - 1);
             int rightEnd = min((leftStart + runSize * 2 - 1), (size - 1));
 
-            if (mid < rightEnd) 
+            if (mid < rightEnd)
             {
+                mergeStack.push(leftStart, rightEnd); // Сохраняем только правый индекс
                 merge(arr, leftStart, mid, rightEnd);
             }
         }
 
-        runSize *= 2; // Double the run size
+        runSize *= 2;
+
+        // слияние из стека
+        while (!mergeStack.isEmpty())
+        {
+            pair<int, int> bounds = mergeStack.pop();
+            merge(arr, bounds.first, bounds.second - bounds.first / 2 - 1, bounds.second);
+        }
     }
 }
 
